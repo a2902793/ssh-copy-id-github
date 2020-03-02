@@ -64,14 +64,14 @@ ssh_copy_id_github() {
     fi
 
     key=`cat "$key_file"`
-
+    read -p "Enter Title for Github SSH Keys: " Github_SSH_key_Title;
     [ -z $username ] && read -p "GitHub username: " username || username=$username; echo "Username: $username"
 
     read -sp "GitHub password: " password && echo
 
     response=`\
         curl -is https://api.github.com/user/keys -X POST -u "$username:$password" -H "application/json" \
-        -d "{\"title\": \"$USER@$HOSTNAME\", \"key\": \"$key\"}" \
+        -d "{\"title\": \"$Github_SSH_key_Title\", \"key\": \"$key\"}" \
         |  grep 'Status: [45][0-9]\{2\}\|X-GitHub-OTP: required; .\+\|message' | tr -d "\r"`
 
     otp_required "$response" otp
@@ -87,7 +87,7 @@ ssh_copy_id_github() {
     if [ "$otp" == "$TRUE"  ]; then
         read -sp "Enter your OTP code (check your $type): " code && echo
 
-        response=`curl -si https://api.github.com/user/keys -X POST -u "$username:$password" -H "X-GitHub-OTP: $code" -H "application/json" -d "{\"title\": \"$USER@$HOSTNAME\", \"key\": \"$key\"}" | grep 'Status: [45][0-9]\{2\}\|X-GitHub-OTP: required; .\+\|message\|key' | tr -d "\r"`
+        response=`curl -si https://api.github.com/user/keys -X POST -u "$username:$password" -H "X-GitHub-OTP: $code" -H "application/json" -d "{\"title\": \"$Github_SSH_key_Title\", \"key\": \"$key\"}" | grep 'Status: [45][0-9]\{2\}\|X-GitHub-OTP: required; .\+\|message\|key' | tr -d "\r"`
 
         otp_required "$response" otp
         [ "$otp"  ==  "$TRUE" ] && { echo "Wrong OTP."; exit 10; }
